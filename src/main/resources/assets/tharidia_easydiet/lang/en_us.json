@@ -1,3 +1,12 @@
 {
-  "itemGroup.tharidia_easydiet": "Tharidia: Easy Diet"
+  "itemGroup.tharidia_easydiet": "Tharidia: Easy Diet",
+  
+  "diet.category.grain": "Grains",
+  "diet.category.protein": "Proteins",
+  "diet.category.vegetable": "Vegetables",
+  "diet.category.fruit": "Fruits",
+  "diet.category.sugar": "Sugars",
+  "diet.category.water": "Hydration",
+  
+  "diet.tooltip.header": "Diet Values:"
 }
