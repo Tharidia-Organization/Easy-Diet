@@ -1,24 +1,35 @@
 modLoader="javafml"
 loaderVersion="[4,)"
-license="All Rights Reserved"
+license="GNU General Public License v3.0"
 
 [[mods]]
-modId="tharidiathings"
-version="1.0.0"
-displayName="Tharidia Things - Diet System"
+modId="tharidia_easydiet"
+version="0.1.0-alpha"
+displayName="Tharidia: Easy Diet"
 description='''
-Advanced diet and nutrition system with food categories and decay mechanics.
-'''
-authors="THproject"
+⚠️ ALPHA VERSION - Under Active Development
 
-[[dependencies.tharidiathings]]
+Part of the Tharidia Project, a complex medieval fantasy roleplay server for Minecraft.
+
+This mod introduces a comprehensive diet and nutrition system that tracks what you eat and rewards balanced consumption. Food is categorized into different groups (proteins, vegetables, fruits, grains, etc.), and maintaining a varied diet provides powerful benefits while neglecting certain food groups results in penalties.
+
+Features:
+- Dynamic food categorization system
+- Nutrition tracking and decay mechanics
+- Configurable diet profiles for different foods
+- Balanced diet rewards and penalties
+- Seamless integration with Tharidia's roleplay mechanics
+'''
+authors="Frank02, Tharidia Team"
+
+[[dependencies.tharidia_easydiet]]
     modId="neoforge"
     type="required"
     versionRange="[21.1,)"
     ordering="NONE"
     side="BOTH"
 
-[[dependencies.tharidiathings]]
+[[dependencies.tharidia_easydiet]]
     modId="minecraft"
     type="required"
     versionRange="[1.21.1,1.22)"
