@@ -288,8 +288,3 @@ idea {
         downloadJavadoc = true
     }
 }
-
-tasks.named('jar') {
-    archiveBaseName.set('Tharidia-EasyDiet')
-    archiveVersion.set('')
-}
