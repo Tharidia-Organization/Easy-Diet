@@ -92,6 +92,10 @@ public class DietHandler {
         
         DietData data = serverPlayer.getData(DietAttachments.DIET_DATA);
         initializeIfNeeded(serverPlayer, data);
+
+        // Reset decay timer to current time to prevent decay during offline time
+        data.setLastDecayTimeMs(System.currentTimeMillis());
+
         DietEffectApplier.apply(serverPlayer, data);
         syncIfNeeded(serverPlayer, data, true);
         
