@@ -39,6 +39,7 @@ public final class DietRegistry {
 
     public static void setServer(MinecraftServer server) {
         currentServer = server;
+        if (server != null && server == currentServer && persistentCache != null) {return;}
         RecipeNutrientAnalyzer.setServer(server);
         if (server != null) {
             PROFILE_CACHE.invalidateAll();
