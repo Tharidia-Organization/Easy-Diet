@@ -3,12 +3,18 @@ package com.THproject.tharidia_easydiet.diet;
 import com.THproject.tharidia_easydiet.TharidiaEasyDiet;
 import com.THproject.tharidia_easydiet.network.DietProfileSyncPacket;
 import com.THproject.tharidia_easydiet.network.DietSyncPacket;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.alchemy.PotionContents;
+import net.minecraft.world.item.alchemy.Potions;
 import net.neoforged.bus.api.SubscribeEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.living.LivingEntityUseItemEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
@@ -22,6 +28,7 @@ import java.util.Map;
  */
 @EventBusSubscriber(modid = TharidiaEasyDiet.MODID)
 public class DietHandler {
+    private static final Logger LOGGER = LoggerFactory.getLogger(DietHandler.class);
     private static final float START_PERCENT = 0.8f;
 
     @SubscribeEvent
@@ -32,12 +39,47 @@ public class DietHandler {
         }
 
         ItemStack stack = event.getItem();
-        if (stack.isEmpty() || stack.getItem().getFoodProperties(stack, player) == null) {
+        LOGGER.info("[DIET] Item use finished: {}", stack.getItem());
+
+        if (stack.isEmpty()) {
             return;
         }
 
-        DietProfile profile = DietRegistry.getProfile(stack);
-        if (profile.isEmpty()) {
+        DietProfile profile = null;
+
+        // Check if this is a water bottle (potion with water)
+        LOGGER.info("[DIET] Is potion item? {}", stack.is(Items.POTION));
+        if (stack.is(Items.POTION)) {
+            LOGGER.info("[DIET] Detected potion consumption");
+            PotionContents contents = stack.get(DataComponents.POTION_CONTENTS);
+            LOGGER.info("[DIET] PotionContents: {}", contents);
+            if (contents != null) {
+                // Check if this is a water potion (no effects, matches water holder)
+                boolean isWater = contents.potion()
+                        .map(holder -> holder.value() == Potions.WATER.value())
+                        .orElse(contents.customEffects().isEmpty() && contents.customColor().isEmpty());
+
+                LOGGER.info("[DIET] Is water bottle: {}", isWater);
+
+                if (isWater) {
+                    // Water bottle provides water nutrition
+                    DietSystemSettings settings = DietRegistry.getSettings();
+                    float waterValue = settings.waterAlwaysEatBonus() + settings.drinkWaterBonus();
+                    profile = DietProfile.of(0, 0, 0, 0, 0, waterValue);
+                    LOGGER.info("[DIET] Water bottle nutrition applied: {}", waterValue);
+                }
+            }
+        }
+
+        // If not a water bottle, check for regular food
+        if (profile == null) {
+            if (stack.getItem().getFoodProperties(stack, player) == null) {
+                return;
+            }
+            profile = DietRegistry.getProfile(stack);
+        }
+
+        if (profile == null || profile.isEmpty()) {
             return;
         }
 

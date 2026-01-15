@@ -6,13 +6,18 @@ import com.THproject.tharidia_easydiet.diet.ClientDietProfileCache;
 import com.THproject.tharidia_easydiet.diet.DietCategory;
 import com.THproject.tharidia_easydiet.diet.DietProfile;
 import com.THproject.tharidia_easydiet.diet.DietRegistry;
+import com.THproject.tharidia_easydiet.diet.DietSystemSettings;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.TextColor;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.alchemy.PotionContents;
+import net.minecraft.world.item.alchemy.Potions;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -43,15 +48,26 @@ public class DietTooltipHandler {
     @SubscribeEvent
     public static void onTooltip(ItemTooltipEvent event) {
         ItemStack stack = event.getItemStack();
-        if (stack.isEmpty() || stack.getItem().getFoodProperties(stack, event.getEntity()) == null) {
+        if (stack.isEmpty()) {
+            return;
+        }
+
+        // Check if this is a food item OR a water bottle
+        boolean isFood = stack.getItem().getFoodProperties(stack, event.getEntity()) != null;
+        boolean isWaterBottle = isWaterBottle(stack);
+
+        if (!isFood && !isWaterBottle) {
             return;
         }
 
         ResourceLocation id = net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(stack.getItem());
-        List<Component> cached = CACHE.get(id);
+        // Use a special cache key for water bottles
+        ResourceLocation cacheKey = isWaterBottle ? ResourceLocation.parse("tharidia_easydiet:water_bottle") : id;
+
+        List<Component> cached = CACHE.get(cacheKey);
         if (cached == null) {
-            cached = buildTooltipLines(stack);
-            CACHE.put(id, cached);
+            cached = isWaterBottle ? buildWaterBottleTooltip() : buildTooltipLines(stack);
+            CACHE.put(cacheKey, cached);
         }
 
         if (!cached.isEmpty()) {
@@ -59,6 +75,35 @@ public class DietTooltipHandler {
             event.getToolTip().add(Component.translatable("diet.tooltip.header").withStyle(style -> style.withColor(0xFFAA00)));
             event.getToolTip().addAll(cached);
         }
+    }
+
+    /**
+     * Checks if the item is a water bottle (potion with water)
+     */
+    private static boolean isWaterBottle(ItemStack stack) {
+        if (!stack.is(Items.POTION)) {
+            return false;
+        }
+        PotionContents contents = stack.get(DataComponents.POTION_CONTENTS);
+        if (contents == null) {
+            return false;
+        }
+        return contents.potion()
+                .map(holder -> holder.value() == Potions.WATER.value())
+                .orElse(contents.customEffects().isEmpty() && contents.customColor().isEmpty());
+    }
+
+    /**
+     * Builds tooltip lines for water bottles
+     */
+    private static List<Component> buildWaterBottleTooltip() {
+        DietSystemSettings settings = DietRegistry.getSettings();
+        float waterValue = settings.waterAlwaysEatBonus() + settings.drinkWaterBonus();
+
+        List<Component> lines = new java.util.ArrayList<>();
+        TextColor color = CATEGORY_COLORS.getOrDefault(DietCategory.WATER, TextColor.fromRgb(0x1E90FF));
+        lines.add(createDietLine("diet.category.water", waterValue, color));
+        return lines;
     }
 
     private static List<Component> buildTooltipLines(ItemStack stack) {

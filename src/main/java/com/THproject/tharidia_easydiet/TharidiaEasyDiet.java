@@ -7,12 +7,14 @@ import com.mojang.logging.LogUtils;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModContainer;
+import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.event.AddReloadListenerEvent;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import org.slf4j.Logger;
 
 @Mod(TharidiaEasyDiet.MODID)
+@EventBusSubscriber(modid = TharidiaEasyDiet.MODID)
 public class TharidiaEasyDiet {
     public static final String MODID = "tharidia_easydiet";
     public static final Logger LOGGER = LogUtils.getLogger();
